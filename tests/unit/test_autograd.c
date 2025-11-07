@@ -1,5 +1,5 @@
-#include "petard/tensor.h"
-#include "petard/ops.h"
+#include "trebuchet/tensor.h"
+#include "trebuchet/ops.h"
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
@@ -292,29 +292,40 @@ void test_backward_complex() {
 
 void test_backward_matmul_chain() {
     printf("Test: backward_matmul_chain (neural network-like computation)\n");
-    printf("  Computing: output = ReLU(x @ W1) @ W2\n");
+    printf("  Computing: output = ReLU(x @ W1 + y @ W2) @ W2\n");
     
     size_t shape_x[] = {1, 2};  // 1x2 input
+    size_t shape_y[] = {1, 2};  // 1x2 output
     size_t shape_w1[] = {2, 3}; // 2x3 weight matrix
     size_t shape_w2[] = {3, 2}; // 3x2 weight matrix
     
     Tensor *x = tensor_ones(shape_x, 2);
     x->data[0] = 1.0f;
     x->data[1] = 2.0f;
+
+    Tensor *y = tensor_ones(shape_y, 2);
+    y->data[0] = 5.0f;
+    y->data[1] = 6.0f;
     
-    Tensor *W1 = tensor_ones(shape_w1, 2);
+    Tensor *W1 = tensor_randn(shape_w1, 2, 50);
+    tensor_print(W1);
     Tensor *W2 = tensor_ones(shape_w2, 2);
     
     tensor_set_requires_grad(x, 1);
+    tensor_set_requires_grad(y, 1);
     tensor_set_requires_grad(W1, 1);
     tensor_set_requires_grad(W2, 1);
     
     printf("  Input x: [%.1f, %.1f]\n", x->data[0], x->data[1]);
+    printf("  Input y: [%.1f, %.1f]\n", y->data[0], y->data[1]);
     
-    // Forward pass: x @ W1 -> ReLU -> hidden @ W2 -> output
-    Tensor *hidden_pre = tensor_matmul(x, W1);     // [1, 3]
-    Tensor *hidden = tensor_relu(hidden_pre);       // [1, 3]
-    Tensor *output = tensor_matmul(hidden, W2);     // [1, 2]
+    // Forward pass: x @ W1 + y -> ReLU -> hidden @ W2 -> output
+    Tensor *hidden0 = tensor_matmul(x, W1);     // [1, 3]
+    Tensor *hidden1 = tensor_matmul(y, W1);           // [1, 2]
+    Tensor *hidden2 = tensor_add(hidden0, hidden1); // [1, 3]
+    Tensor *hidden3 = tensor_relu(hidden2);       // [1, 3]
+    Tensor *output = tensor_matmul(hidden3, W2);     // [1, 2]
+
     
     printf("  Output: [%.1f, %.1f]\n", output->data[0], output->data[1]);
     
@@ -322,25 +333,29 @@ void test_backward_matmul_chain() {
     
     // All gradients should be computed
     assert(x->grad != NULL);
+    assert(y->grad != NULL);
     assert(W1->grad != NULL);
     assert(W2->grad != NULL);
     
     printf("  Result: x.grad = [%.1f, %.1f]\n", x->grad[0], x->grad[1]);
+    printf("          y.grad = [%.1f, %.1f]\n", y->grad[0], y->grad[1]);
     printf("          W1.grad sum = %.1f (gradient for first layer weights)\n", 
            W1->grad[0] + W1->grad[1] + W1->grad[2] + W1->grad[3] + W1->grad[4] + W1->grad[5]);
     printf("          W2.grad sum = %.1f (gradient for second layer weights)\n",
            W2->grad[0] + W2->grad[1] + W2->grad[2] + W2->grad[3] + W2->grad[4] + W2->grad[5]);
-    
     // Verify non-zero gradients (since ReLU will pass through positive values)
     assert(x->grad[0] != 0.0f || x->grad[1] != 0.0f);
     
     printf("          (gradients propagated through 2-layer network)\n");
     
     tensor_free(x);
+    tensor_free(y); 
     tensor_free(W1);
     tensor_free(W2);
-    tensor_free(hidden_pre);
-    tensor_free(hidden);
+    tensor_free(hidden0);
+    tensor_free(hidden1);
+    tensor_free(hidden2);
+    tensor_free(hidden3);
     tensor_free(output);
     printf("  ✓ PASSED\n\n");
 }

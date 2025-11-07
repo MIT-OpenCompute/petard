@@ -1,5 +1,5 @@
-#include "petard/tensor.h"
-#include "petard/ops.h"
+#include "trebuchet/tensor.h"
+#include "trebuchet/ops.h"
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>

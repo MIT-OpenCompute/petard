@@ -1,5 +1,5 @@
-#include "petard/tensor.h"
-#include "petard/autograd.h"
+#include "trebuchet/tensor.h"
+#include "trebuchet/autograd.h"
 #include <stdlib.h> 
 #include <stdio.h>
 #include <string.h>
@@ -138,4 +138,60 @@ void tensor_backward(Tensor *T) {
 
     free(visited); 
     free(stack); 
+}
+
+void tensor_print(Tensor *T) {
+    if (!T) return;
+
+    printf("Tensor(shape=[");
+    for (size_t i = 0; i < T->ndim; i++) {
+        printf("%zu", T->shape[i]);
+        if (i < T->ndim - 1) {
+            printf(", ");
+        }
+    }
+    printf("], ndim=%zu, data=\n[", T->ndim);
+    if (T->ndim == 2) {
+        for (size_t i = 0; i < T->shape[0]; i++) {
+            printf("[");
+            for (size_t j = 0; j < T->shape[1]; j++) {
+                printf("%.4f", T->data[i * T->shape[1] + j]);
+                if (j < T->shape[1] - 1) {
+                    printf(", ");
+                }
+            }
+            printf("]");
+            if (i < T->shape[0] - 1) {
+                printf(",\n ");
+            }
+        }
+    } else {
+        for (size_t i = 0; i < T->size; i++) {
+            printf("%.4f", T->data[i]);
+            if (i < T->size - 1) {
+                printf(", ");
+            }
+        }
+    }
+    printf("])\n");
+}
+
+Tensor* tensor_copy(Tensor *T) {
+    if (!T) return NULL;
+
+    Tensor *C = tensor_create(T->shape, T->ndim);
+    if (!C) return NULL;
+
+    memcpy(C->data, T->data, T->size * sizeof(float));
+
+    T->grad = NULL; 
+    T->requires_grad = 0;
+    T->op = OP_NONE;
+    T->inputs = NULL;
+    T->num_inputs = 0;
+    T->backward_fn = NULL;
+    T->extra_data = NULL;
+    return T; 
+
+    return C;
 }

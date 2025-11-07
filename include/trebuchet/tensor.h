@@ -15,7 +15,10 @@ typedef enum {
     OP_RELU,
     OP_SIGMOID,
     OP_TANH,
-    OP_SOFTMAX
+    OP_SOFTMAX,
+    OP_MSE,
+    OP_CROSS_ENTROPY,
+    OP_BINARY_CROSS_ENTROPY
 } OpType;
 
 struct Tensor {

@@ -1,4 +1,4 @@
-#include "petard/tensor.h"
+#include "trebuchet/tensor.h"
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
