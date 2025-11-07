@@ -1,38 +1,37 @@
-#pragma once
-#include <stddef.h>
+#ifndef TENSOR_H
+#define TENSOR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <stddef.h> 
 
 typedef struct {
-    int rows, cols;
-    float *d;
-} mat;
+    float *data; 
+    float *grad; 
+    size_t *shape; 
+    size_t ndim; 
+    size_t size; 
+    int requires_grad;
+} Tensor;
 
+// Creation and destruction
+Tensor* tensor_create(size_t *shape, size_t ndim); 
+Tensor* tensor_zeroes(size_t *shape, size_t ndim); 
+Tensor* tensor_ones(size_t *shape, size_t ndim); 
+Tensor* tensor_randn(size_t *shape, size_t ndim, int seed); 
+void tensor_free(Tensor *T); 
 
-// Creation and Deletion
-mat empty(int rows, int cols);
-mat zeros(int rows, int cols);
-mat ones(int rows, int cols);
-mat randn(int rows, int cols, unsigned int *seed, float scale);
-void free(mat *m);
+// Operations
+Tensor* tensor_matmul(Tensor *A, Tensor *B);
+Tensor* tensor_add(Tensor *A, Tensor *B); 
+Tensor* tensor_sub(Tensor *A, Tensor *B);
+Tensor* tensor_mul(Tensor *A, Tensor *B);
+Tensor* tensor_transpose(Tensor *T); 
 
-// Copy and Assignment
-void copy(mat *dst, const mat *src);
-void fill(mat *t, float value);
+// Gradients
+void tensor_zero_grad(Tensor *T); 
+void tensor_backward(Tensor *T); 
 
-// Reshape and View
-int reshape(mat *t, int rows, int cols);
-mat flatten(mat *t);
+// Utilities
+void tensor_print(Tensor *T);
+Tensor* tensor_copy(Tensor *T); 
 
-// Indexing 
-mat index(const mat *src, int row0, int rows, int col0, int cols); 
-float get(const mat *t, int row, int col); 
-void set(mat *t, int row, int col, float value); 
-void td_get_row(const mat *t, int row, mat *out);
-void td_set_row(mat *t, int row, const mat *in);
-
-#ifdef __cplusplus
-}
 #endif
