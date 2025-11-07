@@ -187,25 +187,58 @@ Tensor* tensor_softmax(Tensor *A) {
 }
 
 // Loss functions
-Tensor* tensor_mse(Tensor *predictions, Tensor *targets) {
-    if (!predictions || !targets) return NULL; 
-    if (predictions->ndim != targets->ndim) return NULL; 
+static int check_pred_target(Tensor *predictions, Tensor *targets) {
+    if (!predictions || !targets) return 0; 
+    if (predictions->ndim != targets->ndim) return 0; 
     for (size_t i = 0; i < predictions->ndim; i++) {
-        if (predictions->shape[i] != targets->shape[i]) return NULL; 
+        if (predictions->shape[i] != targets->shape[i]) return 0; 
     }
+    return 1; 
+}
+
+Tensor* tensor_mse(Tensor *predictions, Tensor *targets) {
+    if (!check_pred_target(predictions, targets)) return NULL;
 
     Tensor *loss = tensor_create((size_t[]){1}, 1);
     if (!loss) return NULL; 
 
-    float sum_sq_erro = 0.0f; 
+    float sum_sq_error = 0.0f; 
     for (size_t i = 0; i < predictions->size; i++) {
         float diff = predictions->data[i] - targets->data[i];
-        sum_sq_erro += diff * diff;
+        sum_sq_error += diff * diff;
     }
-    loss->data[0] = sum_sq_erro / predictions->size;
+    loss->data[0] = sum_sq_error / predictions->size;
     return loss;
 }
 
 Tensor* tensor_cross_entropy(Tensor *predictions, Tensor *targets) {
+    if (!check_pred_target(predictions, targets)) return NULL; 
     
+    Tensor *loss = tensor_create((size_t[]){1}, 1);
+    if (!loss) return NULL;
+
+    float sum_ce_loss = 0.0f; 
+    for (size_t i = 0; i < predictions->size; i++) {
+        float pred = predictions->data[i];
+        float target = targets->data[i]; 
+        sum_ce_loss += -target * logf(pred > 0.0f ? pred : 0.0f);
+    }
+    loss->data[0] = sum_ce_loss / predictions->size; 
+    return loss;
+}
+
+Tensor* tensor_binary_cross_entropy(Tensor *predictions, Tensor *targets) {
+    if (!check_pred_target(predictions, targets)) return NULL; 
+    
+    Tensor *loss = tensor_create((size_t[]){1}, 1);
+    if (!loss) return NULL;
+
+    float sum_bce_loss = 0.0f; 
+    for (size_t i = 0; i < predictions->size; i++) {
+        float pred = predictions->data[i];
+        float target = targets->data[i]; 
+        sum_bce_loss += - (target * logf(pred > 0.0f ? pred : 0.0f) + (1.0f - target) * logf((1.0f - pred) > 0.0f ? (1.0f - pred) : 0.0f));
+    }
+    loss->data[0] = sum_bce_loss / predictions->size; 
+    return loss;
 }

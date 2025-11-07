@@ -1,6 +1,7 @@
 #include "trebuchet/autograd.h"
 #include <stdlib.h>
 
+// Tensor function gradients
 void backward_add(Tensor *C) {
     Tensor *A = C->inputs[0];
     Tensor *B = C->inputs[1];
@@ -100,6 +101,7 @@ void backward_transpose(Tensor *C) {
     }
 }
 
+// Activation function gradients
 void backward_relu(Tensor *C) {
     Tensor *A = C->inputs[0];
     
@@ -145,6 +147,78 @@ void backward_softmax(Tensor *C) {
                 float delta = (i == j) ? 1.0f : 0.0f;
                 A->grad[i] += C->grad[j] * C->data[j] * (delta - C->data[i]);
             }
+        }
+    }
+}
+
+// Loss function gradients
+void backward_mse(Tensor *C) {
+    Tensor *predictions = C->inputs[0];
+    Tensor *targets = C->inputs[1]; 
+
+    if (predictions->requires_grad) {
+        if (!predictions->grad) 
+            predictions->grad = (float *)calloc(predictions->size, sizeof(float));
+        for (size_t i = 0; i < predictions->size; i++) {
+            predictions->grad[i] += 
+                (2.0f / predictions->size) * (predictions->data[i] - targets->data[i]) * C->grad[0];
+        }
+    }
+
+    if (targets->requires_grad) {
+        if (!targets->grad) 
+            targets->grad = (float *)calloc(targets->size, sizeof(float));
+        for (size_t i = 0; i < targets->size; i++) {
+            targets->grad[i] -= 
+                (2.0f / targets->size) * (predictions->data[i] - targets->data[i]) * C->grad[0];
+        }
+    }
+}
+
+void backward_cross_entropy(Tensor *C) {
+    Tensor *predictions = C->inputs[0];
+    Tensor *targets = C->inputs[1]; 
+
+    if (predictions->requires_grad) {
+        if (!predictions->grad) 
+            predictions->grad = (float *)calloc(predictions->size, sizeof(float));
+        for (size_t i = 0; i < predictions->size; i++) {
+            predictions->grad[i] += 
+                (-targets->data[i] / predictions->data[i]) * C->grad[0];
+        }
+    }
+
+    if (targets->requires_grad) {
+        if (!targets->grad) 
+            targets->grad = (float *)calloc(targets->size, sizeof(float));
+        for (size_t i = 0; i < targets->size; i++) {
+            targets->grad[i] -= 
+                ( -logf(predictions->data[i]) ) * C->grad[0];
+        }
+    }
+}
+
+void backward_binary_cross_entropy(Tensor *C) {
+    Tensor *predictions = C->inputs[0];
+    Tensor *targets = C->inputs[1]; 
+
+    if (predictions->requires_grad) {
+        if (!predictions->grad) 
+            predictions->grad = (float *)calloc(predictions->size, sizeof(float));
+        for (size_t i = 0; i < predictions->size; i++) {
+            predictions->grad[i] += 
+                (-(targets->data[i] / predictions->data[i]) + 
+                 (1.0f - targets->data[i]) / (1.0f - predictions->data[i])) * C->grad[0];
+        }
+    }
+
+    if (targets->requires_grad) {
+        if (!targets->grad) 
+            targets->grad = (float *)calloc(targets->size, sizeof(float));
+        for (size_t i = 0; i < targets->size; i++) {
+            targets->grad[i] -= 
+                (-logf(predictions->data[i]) + 
+                 -logf(1.0f - predictions->data[i])) * C->grad[0];
         }
     }
 }
