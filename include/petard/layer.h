@@ -2,6 +2,7 @@
 #define LAYER_H
 
 #include "tensor.h"
+#include "ops.h"
 
 typedef enum {
     LAYER_LINEAR,
