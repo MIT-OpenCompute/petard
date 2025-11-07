@@ -5,10 +5,8 @@
 
 #include <stddef.h>
 
-// Forward declaration for self-reference
 typedef struct Tensor Tensor;
 
-// Operation types for computational graph
 typedef enum {
     OP_NONE,
     OP_ADD,
@@ -29,7 +27,6 @@ struct Tensor {
     size_t ndim;
     size_t size;
     
-    // Autograd fields
     int requires_grad;
     OpType op;
     Tensor **inputs;

@@ -6,11 +6,13 @@
 #include "tensor.h"
 #include "layer.h"
 
-typedef struct {
+typedef struct Network {
     Layer **layers;
     size_t num_layers;
     size_t capacity;
-} Network;
+};
+
+typedef struct Network Network; 
 
 // Network management
 Network* network_create();
