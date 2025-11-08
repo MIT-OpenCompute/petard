@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
-project(petard C)
+project(basednn C)
 
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -g")
 
 # Include directories
 include_directories(include)
@@ -11,11 +12,44 @@ set(SOURCES
     src/tensor.c
     src/ops.c
     src/autograd.c
+    src/layer.c
+    src/network.c
+    src/optimizer.c
 )
 
 # Create library
-add_library(petard ${SOURCES})
+add_library(basednn ${SOURCES})
+target_link_libraries(basednn m)
 
-# Example executable (if needed)
-add_executable(mnist_mlp examples/mnist_mlp.c)
-target_link_libraries(mnist_mlp petard m)
+# Enable testing
+enable_testing()
+
+# Unit tests
+set(TEST_SOURCES
+    tests/unit/test_tensor.c
+    tests/unit/test_ops.c
+    tests/unit/test_autograd.c
+    tests/unit/test_layer.c
+    tests/unit/test_network.c
+    tests/unit/test_optimizer.c
+)
+
+# Create individual test executables
+foreach(test_src ${TEST_SOURCES})
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_executable(${test_name} ${test_src})
+    target_link_libraries(${test_name} basednn m)
+    add_test(NAME ${test_name} COMMAND ${test_name})
+endforeach()
+
+# Optional: Create a single test runner that runs all tests
+add_executable(run_all_tests 
+    tests/unit/test_tensor.c
+    tests/unit/test_ops.c
+    tests/unit/test_autograd.c
+    tests/unit/test_layer.c
+    tests/unit/test_network.c
+    tests/unit/test_optimizer.c
+)
+target_link_libraries(run_all_tests basednn m)
+add_test(NAME run_all_tests COMMAND run_all_tests)

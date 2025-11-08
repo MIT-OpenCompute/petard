@@ -46,6 +46,13 @@ static void tensor_scale_add(Tensor *dst, Tensor *src, float scale) {
     tensor_add_inplace(dst, src);
 }
 
+static void tensor_fill(Tensor *T, float value) {
+    if (!T || !T->data) return; 
+    for (size_t i = 0; i < T->size; i++) {
+        T->data[i] = value; 
+    }
+}
+
 // Optimizer constructor/destuctors
 Optimizer* optimizer_create(Network *net, OptimizerConfig config) {
     if (!net) return NULL; 

@@ -51,6 +51,6 @@ void tensor_backward(Tensor *T);
 
 // Utilities
 void tensor_print(Tensor *T);
-Tensor* tensor_copy(Tensor *T); 
+Tensor* tensor_copy(Tensor *T);
 
 #endif

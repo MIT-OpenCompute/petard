@@ -147,6 +147,11 @@ void tensor_backward(Tensor *T) {
     free(stack); 
 }
 
+void tensor_zero_grad(Tensor *T) {
+    if (!T || !T->grad) return;
+    memset(T->grad, 0, T->size * sizeof(float));
+}
+
 void tensor_print(Tensor *T) {
     if (!T) return;
 
@@ -191,14 +196,14 @@ Tensor* tensor_copy(Tensor *T) {
 
     memcpy(C->data, T->data, T->size * sizeof(float));
 
-    T->grad = NULL; 
-    T->requires_grad = 0;
-    T->owns_data = 1; 
-    T->op = OP_NONE;
-    T->inputs = NULL;
-    T->num_inputs = 0;
-    T->backward_fn = NULL;
-    T->extra_data = NULL;
+    C->grad = NULL; 
+    C->requires_grad = 0;
+    C->owns_data = 1; 
+    C->op = OP_NONE;
+    C->inputs = NULL;
+    C->num_inputs = 0;
+    C->backward_fn = NULL;
+    C->extra_data = NULL;
 
     return C;
 }
