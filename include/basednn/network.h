@@ -11,8 +11,6 @@ typedef enum {
     LOSS_BINARY_CROSS_ENTROPY
 } LossType;
 
-typedef struct Network Network;
-
 struct Network {
     Layer **layers;
     Tensor **parameters;
