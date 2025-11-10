@@ -1,5 +1,6 @@
 /*
  * AI generated Unit tests for ops.c
+ * unit tests are tedious to write lol god forgiveth me for using AI for these
  * Tests tensor operations, activations, loss functions, and utilities
  */
 

@@ -1,5 +1,6 @@
 /*
  * AI Generated Unit tests for tensor.c
+ * unit tests are tedious to write lol god forgiveth me for using AI for these
  * Tests tensor creation, initialization, autograd, memory management, and utilities
  */
 

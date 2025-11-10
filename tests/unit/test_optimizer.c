@@ -1,5 +1,6 @@
 /*
  * AI Generated Unit tests for optimizer.c
+ * unit tests are tedious to write lol god forgiveth me for using AI for these
  * Tests SGD and Adam optimizers, parameter updates, and state management
  */
 

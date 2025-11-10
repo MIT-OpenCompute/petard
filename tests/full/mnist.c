@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-// ai generated mnist test
-
 uint32_t read_uint32(FILE *f) {
     uint32_t val;
     fread(&val, 4, 1, f);

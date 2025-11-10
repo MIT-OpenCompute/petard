@@ -1,5 +1,6 @@
 /*
  * AI generated Unit tests for network.c
+ * unit tests are tedious to write lol god forgiveth me for using AI for these
  * Tests network creation, layer management, forward pass, training, and utilities
  */
 

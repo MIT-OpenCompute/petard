@@ -1,5 +1,6 @@
 /*
  * AI generated Unit tests for autograd.c
+ * unit tests are tedious to write lol god forgiveth me for using AI for these
  * Tests gradient computation for all operations and activation functions
  */
 
