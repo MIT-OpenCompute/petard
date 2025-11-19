@@ -190,10 +190,25 @@ OptimizerFreeStateFn get_optimizer_free_state_fn(const char *name) {
 // Registry Initialization
 // ====================================================
 
+// Backend initialization
+#ifdef HAS_WGPU
+extern int wgpu_init(void);
+extern void wgpu_register_ops(void);
+#endif
+
+static void backend_init_all(void) {
+#ifdef HAS_WGPU
+    if (wgpu_init() == 0) {
+        wgpu_register_ops();
+    }
+#endif
+}
+
 void registry_init() {
     layer_register_builtins();
     ops_register_builtins();
     optimizer_register_builtins();
+    backend_init_all();
 }
 
 void registry_cleanup() {
@@ -225,4 +240,9 @@ void registry_cleanup() {
         }
     }
     registry_free(&optimizer_registry);
+    
+#ifdef HAS_WGPU
+    extern void wgpu_cleanup(void);
+    wgpu_cleanup();
+#endif
 }

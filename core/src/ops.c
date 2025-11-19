@@ -1,5 +1,6 @@
 #include "../include/ops.h"
 #include "../include/registry.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -69,9 +70,7 @@ static float mul_func(float x, float y) { return x * y; }
 Tensor* tensor_add(Tensor *A, Tensor *B) {
     if (!A || !B) return NULL;
     
-    Tensor *C = tensor_create(A->shape, A->ndim);
-    if (!C) return NULL;
-
+    // Handle broadcasting case (2D + 1D bias) on CPU only
     if (A->ndim == 2 && B->ndim == 1 && A->shape[1] == B->shape[0]) {
         Tensor *C = tensor_create(A->shape, A->ndim);
         if (!C) return NULL;
@@ -85,6 +84,16 @@ Tensor* tensor_add(Tensor *A, Tensor *B) {
         grad_update_two_vars(A, B, C, NULL, "add", backward_add);
         return C;
     }
+    
+    // Check for backend implementation (e.g., GPU) for same-shape adds
+    OpFn backend_fn = get_operation_fn("add");
+    if (backend_fn) {
+        return backend_fn(A, B);
+    }
+    
+    // Fallback to CPU implementation
+    Tensor *C = tensor_create(A->shape, A->ndim);
+    if (!C) return NULL;
 
     tensor_ewise(A, B, C, add_func, "add", backward_add);
     return C;
@@ -191,6 +200,13 @@ void backward_mul(Tensor *C) {
 Tensor* tensor_matmul(Tensor *A, Tensor *B) {
     if (!A || !B) return NULL;
     
+    // Check for backend implementation via registry
+    OpFn backend_fn = get_operation_fn("matmul");
+    if (backend_fn) {
+        return ((Tensor* (*)(Tensor*, Tensor*))backend_fn)(A, B);
+    }
+    
+    // CPU fallback implementation
     if (A->ndim == 1 && B->ndim == 1) {
         if (A->shape[0] != B->shape[0]) return NULL;
         
